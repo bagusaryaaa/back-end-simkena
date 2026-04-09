@@ -1,0 +1,100 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(uuid())
+  username  String   @unique
+  password  String
+  role      Role     @default(OPERATOR)
+  name      String
+  createdAt DateTime @default(now())
+}
+
+enum Role {
+  ADMIN
+  OPERATOR
+  PIMPINAN
+}
+
+model Pegawai {
+  id                 String              @id @default(uuid())
+  nip                String              @unique
+  nama               String
+  tanggal_lahir      DateTime
+  unit_kerja         String
+  jabatan_sekarang   String
+  pangkat_golongan   String
+  tmt_pns            DateTime
+  status_aktif       Boolean             @default(true)
+  created_at         DateTime            @default(now())
+  
+  riwayat_jabatan    RiwayatJabatan[]
+  skp                Skp[]
+  diklat             Diklat[]
+  hukuman_disiplin   HukumanDisiplin[]
+  monitoring_kenaikan MonitoringKenaikan?
+}
+
+model RiwayatJabatan {
+  id                 String   @id @default(uuid())
+  pegawai_id         String
+  nama_jabatan       String
+  tmt_jabatan        DateTime
+  masa_minimal_tahun Int
+  sk_jabatan         String
+  
+  pegawai Pegawai @relation(fields: [pegawai_id], references: [id], onDelete: Cascade)
+}
+
+model Skp {
+  id         String   @id @default(uuid())
+  pegawai_id String
+  tahun      Int
+  nilai      Float
+  predikat   String
+  
+  pegawai Pegawai @relation(fields: [pegawai_id], references: [id], onDelete: Cascade)
+}
+
+model Diklat {
+  id          String   @id @default(uuid())
+  pegawai_id  String
+  nama_diklat String
+  jp          Int
+  tahun       Int
+  
+  pegawai Pegawai @relation(fields: [pegawai_id], references: [id], onDelete: Cascade)
+}
+
+model HukumanDisiplin {
+  id              String   @id @default(uuid())
+  pegawai_id      String
+  jenis_hukuman   String
+  tanggal_mulai   DateTime
+  tanggal_selesai DateTime
+  status_aktif    Boolean  @default(true)
+  
+  pegawai Pegawai @relation(fields: [pegawai_id], references: [id], onDelete: Cascade)
+}
+
+model MonitoringKenaikan {
+  id                         String   @id @default(uuid())
+  pegawai_id                 String   @unique
+  tanggal_layak_masa_jabatan DateTime
+  status_skp                 String
+  status_diklat              String
+  status_disiplin            String
+  tanggal_layak_final        DateTime
+  status_kelayakan           String
+  
+  pegawai Pegawai @relation(fields: [pegawai_id], references: [id], onDelete: Cascade)
+}
